@@ -11,24 +11,24 @@
       <div class="stats-container">
         <div class="stat-box">
           <div class="stat-label">LEFT WEIGHT</div>
-          <div class="stat-value">0.0 kg</div>
+          <div class="stat-value" id="leftWeight">0.0 kg</div>
         </div>
         <div class="stat-box">
           <div class="stat-label">NEXT WEIGHT</div>
-          <div class="stat-value" id="nextWeightValue">VALUE2</div>
+          <div class="stat-value" id="nextWeight">VALUE2</div>
         </div>
         <div class="stat-box">
           <div class="stat-label">RIGHT WEIGHT</div>
-          <div class="stat-value">0.0 kg</div>
+          <div class="stat-value" id="rightWeight">0.0 kg</div>
         </div>
         <div class="stat-box">
           <div class="stat-label">TILT ANGLE</div>
-          <div class="stat-value">VALUE4</div>
+          <div class="stat-value" id="tiltAngle">VALUE4</div>
         </div>
       </div>
       <div class="seesaw-container">
-        <div class="seesaw-parts" id="seesaw-parts" onclick="newCircle()">
-          <div class="plank"></div>
+        <div class="seesaw-parts" id="seesaw-parts" onclick="newCircle(event)">
+          <div class="plank" id="pivot"></div>
           <div class="pivot"></div>
         </div>
         <div class="footer"></div>

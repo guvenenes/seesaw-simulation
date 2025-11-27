@@ -3,11 +3,77 @@ function getRandomWeight(min, max) {
 }
 
 let randomWeight = getRandomWeight(1, 10);
+const leftWeights = [];
+const rightWeights = [];
+let leftWeightSum = 0;
+let rightWeightSum = 0;
+let leftTorque = 0;
+let rightTorque = 0;
+document.getElementById("nextWeight").innerHTML = `${randomWeight} kg`;
 
-document.getElementById("nextWeightValue").innerHTML = `${randomWeight} kg`;
+function calculateSum(array) {
+  return array.reduce((accumulator, item) => {
+    return accumulator + item.weight;
+  }, 0);
+}
 
-function newCircle() {
+function updateDisplay(compareX) {
+  if (compareX > 0) {
+    document.getElementById("rightWeight").innerHTML = `${rightWeightSum} kg`;
+  } else {
+    document.getElementById("leftWeight").innerHTML = `${leftWeightSum} kg`;
+  }
+}
+
+function calculateTorque(array) {
+  return array.reduce((accumulator, item) => {
+    return accumulator + item.weight * item.distance;
+  }, 0);
+}
+
+function calculateAngle() {
+  const angle = Math.max(-30, Math.min(30, (rightTorque - leftTorque) / 10));
+  document.getElementById("tiltAngle").innerHTML = `${angle.toFixed(1)}°`;
+}
+
+function getPivotCenter() {
+  const pivot = document.getElementById("pivot").getBoundingClientRect();
+  return {
+    x: pivot.left + pivot.width / 2,
+    y: pivot.top + pivot.height / 2,
+  };
+}
+
+function newCircle(e) {
+  const clickX = e.clientX;
+  const clickY = e.clientY;
+
+  const pivotCenter = getPivotCenter();
+
+  const compareX = clickX - pivotCenter.x;
+
+  if (compareX > 0) {
+    rightWeights.push({
+      weight: randomWeight,
+      distance: Math.abs(compareX),
+    });
+    rightWeightSum = calculateSum(rightWeights);
+    rightTorque = calculateTorque(rightWeights);
+  } else {
+    leftWeights.push({
+      weight: randomWeight,
+      distance: Math.abs(compareX),
+    });
+    leftWeightSum = calculateSum(leftWeights);
+    leftTorque = calculateTorque(leftWeights);
+  }
+
+  console.log(clickX, "XXXX");
+  console.log(clickY, "YYYY");
+
   console.log(randomWeight, " kg top geldi");
+  updateDisplay(compareX);
+  calculateAngle();
   randomWeight = getRandomWeight(1, 10);
-  document.getElementById("nextWeightValue").innerHTML = `${randomWeight} kg`;
+  document.getElementById("nextWeight").innerHTML = `${randomWeight} kg`;
 }
