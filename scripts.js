@@ -1,5 +1,6 @@
 const leftWeights = [];
 const rightWeights = [];
+const logItems = [];
 let leftWeightSum = 0;
 let rightWeightSum = 0;
 let leftTorque = 0;
@@ -16,6 +17,7 @@ const palette = [
   "#f77a06ff",
   "#f00909ff",
 ];
+
 const plank = document.querySelector("#plank");
 const seesawContainer = document.getElementById("seesaw-container");
 const logs = document.getElementById("logs");
@@ -34,14 +36,13 @@ function calculateSum(array) {
   }, 0);
 }
 
-function updateDisplay(compareX) {
-  if (compareX > 0) {
-    document.getElementById("rightWeight").innerHTML = `${rightWeightSum} kg`;
-  } else if (compareX < 0) {
-    document.getElementById("leftWeight").innerHTML = `${leftWeightSum} kg`;
-  } else {
+function updateDisplay(compareX = null) {
+  if (compareX == 0) {
     document.getElementById("rightWeight").innerHTML = "0.0 kg";
     document.getElementById("leftWeight").innerHTML = "0.0 kg";
+  } else {
+    document.getElementById("rightWeight").innerHTML = `${rightWeightSum} kg`;
+    document.getElementById("leftWeight").innerHTML = `${leftWeightSum} kg`;
   }
 }
 
@@ -55,6 +56,7 @@ function calculateAngle() {
   const angle = Math.max(-30, Math.min(30, (rightTorque - leftTorque) / 10));
   document.getElementById("tiltAngle").innerHTML = `${angle.toFixed(1)}°`;
   rotatePlank(angle);
+  return angle;
 }
 
 function rotatePlank(angle) {
@@ -75,9 +77,8 @@ function generateRandomColor() {
   return palette[Math.floor(Math.random() * palette.length)];
 }
 
-function createCircle(weight, clickX, clickY) {
+function createCircle(weight, positionOnPlank, bgColor) {
   const circle = document.createElement("div");
-  const plankRect = plank.getBoundingClientRect();
   const seesawRect = seesawContainer.getBoundingClientRect();
   const circleSize = (weight + 8) * 5;
   const circleRadius = circleSize / 2;
@@ -85,10 +86,10 @@ function createCircle(weight, clickX, clickY) {
   circle.style.position = "absolute";
   circle.style.height = `${circleSize}px`;
   circle.style.width = `${circleSize}px`;
-  circle.style.backgroundColor = generateRandomColor();
+  circle.style.backgroundColor = `${bgColor}`;
   circle.style.color = "white";
   circle.style.borderRadius = "50%";
-  circle.style.left = `${clickX - plankRect.left}px`;
+  circle.style.left = `${positionOnPlank}px`;
   circle.style.top = `-${seesawRect.height / 2}px`;
   circle.style.zIndex = "15";
   circle.style.fontSize = "17px";
@@ -108,8 +109,10 @@ function createCircle(weight, clickX, clickY) {
 function newCircle(e) {
   const clickX = e.clientX;
   const clickY = e.clientY;
-
+  const plankRect = plank.getBoundingClientRect();
+  const bgColor = generateRandomColor();
   const pivotCenter = getPivotCenter();
+  const positionOnPlank = clickX - plankRect.left;
 
   const compareX = clickX - pivotCenter.x;
 
@@ -117,6 +120,8 @@ function newCircle(e) {
     rightWeights.push({
       weight: randomWeight,
       distance: Math.abs(compareX),
+      bgColor: bgColor,
+      positionOnPlank: positionOnPlank,
     });
     rightWeightSum = calculateSum(rightWeights);
     rightTorque = calculateTorque(rightWeights);
@@ -124,6 +129,8 @@ function newCircle(e) {
     leftWeights.push({
       weight: randomWeight,
       distance: Math.abs(compareX),
+      bgColor: bgColor,
+      positionOnPlank: positionOnPlank,
     });
     leftWeightSum = calculateSum(leftWeights);
     leftTorque = calculateTorque(leftWeights);
@@ -131,8 +138,13 @@ function newCircle(e) {
 
   updateDisplay(compareX);
   calculateAngle();
-  createCircle(randomWeight, clickX, clickY);
+  logItems.push({
+    compareX: compareX,
+    weight: randomWeight,
+  });
+  createCircle(randomWeight, positionOnPlank, bgColor);
   addLog(compareX, randomWeight);
+  saveState();
   randomWeight = getRandomWeight(1, 10);
   document.getElementById("nextWeight").innerHTML = `${randomWeight} kg`;
 }
@@ -160,8 +172,16 @@ function addLog(compareX, weight) {
     Math.round(compareX)
   )}px from center.`;
 
-  logs.appendChild(newLog);
+  newLog.style.opacity = "0";
+  newLog.style.transform = "translateY(-20px)";
+  newLog.style.transition = "all 0.5s ease";
+
   logs.insertBefore(newLog, logs.firstChild);
+
+  requestAnimationFrame(() => {
+    newLog.style.opacity = "1";
+    newLog.style.transform = "translateY(0)";
+  });
 }
 
 function resetSeesaw() {
@@ -183,8 +203,52 @@ function resetSeesaw() {
     logs.innerHTML = "";
     calculateAngle();
     updateDisplay(0);
+    localStorage.removeItem("seesawState");
     randomWeight = getRandomWeight(1, 10);
 
     document.getElementById("nextWeight").innerHTML = `${randomWeight} kg`;
   }, 300);
 }
+
+function saveState() {
+  const currentAngle = calculateAngle();
+  const state = {
+    rightWeights: rightWeights,
+    leftWeights: leftWeights,
+    angle: currentAngle,
+    randomWeight: randomWeight,
+    leftWeightSum: leftWeightSum,
+    rightWeightSum: rightWeightSum,
+    leftTorque: leftTorque,
+    rightTorque: rightTorque,
+    logItems: logItems,
+  };
+  localStorage.setItem("seesawState", JSON.stringify(state));
+}
+
+function loadState() {
+  const saved = localStorage.getItem("seesawState");
+  const state = JSON.parse(saved);
+  leftWeights.length = 0;
+  rightWeights.length = 0;
+  logItems.length = 0;
+  leftWeights.push(...state.leftWeights);
+  rightWeights.push(...state.rightWeights);
+  logItems.push(...state.logItems);
+  angle = state.angle;
+  randomWeight = state.randomWeight;
+  leftWeightSum = state.leftWeightSum;
+  rightWeightSum = state.rightWeightSum;
+  leftTorque = state.leftTorque;
+  rightTorque = state.rightTorque;
+
+  [...leftWeights, ...rightWeights].forEach((item) => {
+    createCircle(item.weight, item.positionOnPlank, item.bgColor);
+  });
+  state.logItems.forEach((item) => addLog(item.compareX, item.weight));
+  calculateAngle();
+  updateDisplay();
+}
+window.onload = () => {
+  loadState();
+};
