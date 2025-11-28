@@ -195,6 +195,7 @@ function resetSeesaw() {
   setTimeout(() => {
     leftWeights.length = 0;
     rightWeights.length = 0;
+    logItems.length = 0;
     leftWeightSum = 0;
     rightWeightSum = 0;
     leftTorque = 0;
