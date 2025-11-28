@@ -20,6 +20,7 @@ body {
 .stat-box {
   background-color: rgb(236, 245, 245);
   display: flex;
+  width: 15%;
   flex-direction: column;
   align-items: center;
   padding: 15px 35px;
@@ -52,6 +53,7 @@ body {
   width: auto;
   position: relative;
   height: 100%;
+  cursor: pointer;
 }
 .plank {
   width: 400px;
@@ -84,6 +86,7 @@ button {
   border-radius: 10px;
   color: white;
   background-color: rgb(81, 111, 145);
+  cursor: pointer;
 }
 .logs {
   display: flex;
@@ -96,4 +99,53 @@ button {
   margin-bottom: 30px;
   border-radius: 15px;
   overflow-y: auto;
+}
+@media (max-width: 1400px) {
+  .main-container {
+    width: 90%;
+  }
+}
+@media (max-width: 850px) {
+  .main-container {
+    width: 100%;
+  }
+  .stats-container {
+    width: 90%;
+    display: block;
+  }
+  .seesaw-container {
+    width: 90%;
+  }
+  .stat-box {
+    width: 90%;
+    margin-bottom: 10px;
+  }
+  .stat-label {
+    font-size: 30px;
+  }
+  .stat-value {
+    font-size: 30px;
+  }
+}
+@media (max-width: 430px) {
+  .main-container {
+    width: 100%;
+  }
+  .stats-container {
+    width: 99%;
+    display: block;
+  }
+  .seesaw-container {
+    width: 99%;
+  }
+  .stat-box {
+    width: 80%;
+    margin-bottom: 5px;
+  }
+  .stat-label {
+    font-size: 20px;
+  }
+  .stat-value {
+    font-size: 20px;
+  }
 }
