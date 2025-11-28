@@ -1,8 +1,3 @@
-function getRandomWeight(min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-let randomWeight = getRandomWeight(1, 10);
 const leftWeights = [];
 const rightWeights = [];
 let leftWeightSum = 0;
@@ -21,6 +16,16 @@ const palette = [
   "#f77a06ff",
   "#f00909ff",
 ];
+const plank = document.querySelector("#plank");
+const seesawContainer = document.getElementById("seesaw-container");
+const logs = document.getElementById("logs");
+
+function getRandomWeight(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+let randomWeight = getRandomWeight(1, 10);
+
 document.getElementById("nextWeight").innerHTML = `${randomWeight} kg`;
 
 function calculateSum(array) {
@@ -32,8 +37,11 @@ function calculateSum(array) {
 function updateDisplay(compareX) {
   if (compareX > 0) {
     document.getElementById("rightWeight").innerHTML = `${rightWeightSum} kg`;
-  } else {
+  } else if (compareX < 0) {
     document.getElementById("leftWeight").innerHTML = `${leftWeightSum} kg`;
+  } else {
+    document.getElementById("rightWeight").innerHTML = "0.0 kg";
+    document.getElementById("leftWeight").innerHTML = "0.0 kg";
   }
 }
 
@@ -69,11 +77,8 @@ function generateRandomColor() {
 
 function createCircle(weight, clickX, clickY) {
   const circle = document.createElement("div");
-  const plank = document.querySelector("#plank");
   const plankRect = plank.getBoundingClientRect();
-  const seesawContainer = document.getElementById("seesaw-container");
   const seesawRect = seesawContainer.getBoundingClientRect();
-
   const circleSize = (weight + 8) * 5;
   const circleRadius = circleSize / 2;
 
@@ -83,21 +88,20 @@ function createCircle(weight, clickX, clickY) {
   circle.style.backgroundColor = generateRandomColor();
   circle.style.color = "white";
   circle.style.borderRadius = "50%";
-  circle.style.left = `${clickX}px`;
-  circle.style.top = `-${600 / 2}px`;
+  circle.style.left = `${clickX - plankRect.left}px`;
+  circle.style.top = `-${seesawRect.height / 2}px`;
   circle.style.zIndex = "15";
   circle.style.fontSize = "17px";
   circle.style.display = "flex";
   circle.style.alignItems = "center";
   circle.style.justifyContent = "center";
   circle.textContent = `${weight}kg`;
-  circle.style.transition = "top 1s ease-in-out";
+  circle.style.transition = "top 1s ease-in";
 
   plank.appendChild(circle);
 
   requestAnimationFrame(() => {
     circle.style.top = `${-circleRadius + 10}px`;
-    circle.style.left = `${clickX - plankRect.left}px`;
   });
 }
 
@@ -128,6 +132,59 @@ function newCircle(e) {
   updateDisplay(compareX);
   calculateAngle();
   createCircle(randomWeight, clickX, clickY);
+  addLog(compareX, randomWeight);
   randomWeight = getRandomWeight(1, 10);
   document.getElementById("nextWeight").innerHTML = `${randomWeight} kg`;
+}
+
+function addLog(compareX, weight) {
+  const newLog = document.createElement("div");
+  let side = "";
+  newLog.style.display = "flex";
+  newLog.style.justifyContent = "start";
+  newLog.style.alignItems = "center";
+  newLog.style.margin = "15px 5px 0 5px";
+  newLog.style.width = "90%";
+  newLog.style.height = "20px";
+  newLog.style.backgroundColor = "white";
+  newLog.style.borderLeft = "3px solid blue";
+  newLog.style.borderRadius = "10px";
+  newLog.style.padding = "10px 15px";
+
+  if (compareX > 0) {
+    side = "right";
+  } else {
+    side = "left";
+  }
+  newLog.textContent = `🔴 ${weight}kg dropped on ${side} at ${Math.abs(
+    Math.round(compareX)
+  )}px from center.`;
+
+  logs.appendChild(newLog);
+  logs.insertBefore(newLog, logs.firstChild);
+}
+
+function resetSeesaw() {
+  const circles = plank.querySelectorAll("div");
+
+  circles.forEach((circle) => {
+    circle.style.transition = "all 0.3s ease-out";
+    circle.style.opacity = "0";
+    circle.style.transform = "translateY(-50px) scale(0.5)";
+  });
+  setTimeout(() => {
+    leftWeights.length = 0;
+    rightWeights.length = 0;
+    leftWeightSum = 0;
+    rightWeightSum = 0;
+    leftTorque = 0;
+    rightTorque = 0;
+    plank.innerHTML = "";
+    logs.innerHTML = "";
+    calculateAngle();
+    updateDisplay(0);
+    randomWeight = getRandomWeight(1, 10);
+
+    document.getElementById("nextWeight").innerHTML = `${randomWeight} kg`;
+  }, 300);
 }

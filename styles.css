@@ -40,8 +40,9 @@ body {
   align-items: center;
   flex-direction: column;
   background-color: rgb(236, 245, 245);
-  height: 700px;
+  height: 500px;
   width: 90%;
+  border-radius: 15px;
 }
 .seesaw-parts {
   display: flex;
@@ -83,4 +84,16 @@ button {
   border-radius: 10px;
   color: white;
   background-color: rgb(81, 111, 145);
+}
+.logs {
+  display: flex;
+  justify-content: start;
+  align-items: center;
+  flex-direction: column;
+  background-color: rgb(236, 245, 245);
+  width: 90%;
+  height: 300px;
+  margin-bottom: 30px;
+  border-radius: 15px;
+  overflow-y: auto;
 }
